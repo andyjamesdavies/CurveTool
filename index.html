@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Curve Tool</title>
+    <style type="text/css">
+      #output {
+        border:1px solid #ccc;
+        margin:10px;
+      }
+
+      #list {
+        width:100%;
+        height:400px;
+      }
+    </style>
+  </head>
+  <body>
+      <label for="cx">CX</label>
+      <input type="text" name="cx" id="cx">
+
+      <label for="cy">CY</label>
+      <input type="text" name="cy" id="cy">
+
+      <label for="radiusW">Radius Width</label>
+      <input type="text" name="radiusW" id="radiusW">
+
+      <label for="radiusH">Radius Height</label>
+      <input type="text" name="radiusH" id="radiusH">
+
+      <label for="startAngle">Start Angle</label>
+      <input type="range" min="0" max="360" step="1" id="startAngle" name="startAngle">
+      <input type="text" id="startAngleTxt" name="startAngleTxt">
+
+      <label for="endAngle">End Angle</label>
+      <input type="range" min="0" max="360" step="1" id="endAngle" name="endAngle">
+      <input type="text" id="endAngleTxt" name="endAngleTxt">      
+
+      <label for="dir">Direction</label>
+      <select name="dir" id="dir">
+        <option value="1">Clockwise</option>
+        <option value="-1">Anti-Clockwise</option>
+      </select>
+
+      <label for="numPoints">NumPoints</label>
+      <input type="text" name="numPoints" id="numPoints">
+
+      <canvas id="output" height="800px" width="800px">This tool only works in browsers supporting canvas, sorry</canvas>
+
+      <textarea id="list"></textarea>
+
+      <script type="text/javascript" src="jquery-1.8.0.min.js"></script>
+      <script type="text/javascript">
+        $(document).ready(function () {
+            var $canvas = $('#output'),
+                $cx = $('#cx'),
+                $cy = $('#cy'),
+                $radiusW = $('#radiusW'),
+                $radiusH = $('#radiusH'),
+                $startAngle = $('#startAngle'),
+                $startAngleTxt = $('#startAngleTxt'),
+                $endAngle = $('#endAngle'),
+                $endAngleTxt = $('#endAngleTxt'),
+                $dir = $('#dir'),
+                $list = $('#list'),
+                $numPoints = $('#numPoints');
+
+            var cx = parseInt($canvas.width(), 10) / 2,
+                cy = parseInt($canvas.height(), 10) / 2,
+                rad = Math.PI / 180;
+                radiusW = 200,
+                radiusH = 150,
+                startAngle = 0,
+                endAngle = 90;
+                dir = 1,
+                numPoints = 53,
+                posX = cx,
+                posY = cy,
+                pointsArr = [];
+
+            $cx.val(cx);
+            $cy.val(cy);
+            $radiusW.val(radiusW);
+            $radiusH.val(radiusH)
+            $startAngle.val(startAngle);
+            $startAngleTxt.val(startAngle);
+            $endAngle.val(endAngle);
+            $endAngleTxt.val(endAngle);
+            $dir.val(dir);
+            $numPoints.val(numPoints)
+
+            var canvas = $canvas[0],
+                ctx = undefined;
+
+            if (canvas !== undefined) {
+                ctx = canvas.getContext('2d');
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+
+                var a = startAngle,
+                    increments = 0,
+                    i = 0;
+
+                pointsArr = [];
+
+                var angleTotal = endAngle - startAngle;
+                if (endAngle < startAngle) {
+                  angleTotal = (360 - startAngle) + endAngle;
+                }
+                increments = angleTotal / numPoints;
+
+                while (angleTotal > 0) {
+                  posX = cx + radiusW  * Math.sin(a * rad);
+                  posY = cy + radiusH * Math.cos(a * rad);
+
+
+                  pointsArr[i] = { x: posX, y: posY };
+
+                  ctx.lineTo(posX, posY);
+                  if (dir >0) {
+                    a += increments;
+                  } else {
+                    a -= increments;
+                  }
+                  angleTotal -= increments;
+                  if (a > 360) {
+                    a = a - 360;
+                  }
+
+                  i++;
+                }
+                ctx.closePath();
+                ctx.stroke();
+
+                if (pointsArr.length > 0) {
+                  var str = '';
+                  for (var i = 0; i < pointsArr.length; i++) {
+                    str += '#panel3.frame_' + parseInt(i + 1, 10) +' h2 { left:' + round(pointsArr[i].x, 2) + 'px; top: ' + round(pointsArr[i].y, 2) + 'px; }' + "\r\n";
+                  }
+
+                  $list.html(str);
+                }
+            }
+
+            function round(num, dec) {
+              return Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
+            }
+
+            draw();
+
+            $cx.change(function () {
+              cx = parseInt($(this).val(), 10);
+              draw();
+            });
+
+            $cy.change(function () {
+              cy = parseInt($(this).val(), 10);
+              draw();
+            });
+
+            $radiusW.change(function () {
+              radiusW = parseInt($(this).val(), 10);
+              draw();
+            });
+
+            $radiusH.change(function () {
+              radiusH = parseInt($(this).val(), 10);
+              draw();
+            });
+
+            $startAngle.change(function () {
+              startAngle = parseInt($(this).val(), 10);
+              $startAngleTxt.val(startAngle);
+              draw();
+            });
+
+            $startAngleTxt.change(function () {
+              startAngle = parseInt($(this).val(), 10);
+              $startAngle.val(startAngle);
+              draw();
+            });
+
+            $endAngle.change(function () {
+              endAngle = parseInt($(this).val(), 10);
+              $endAngleTxt.val(endAngle);
+              draw();
+            });
+
+            $endAngleTxt.change(function () {
+              endAngle = parseInt($(this).val(), 10);
+              $endAngle.val(endAngle);
+              draw();
+            });
+            
+            $dir.change(function () {
+              dir = $(this).val();
+              draw();
+            });
+
+            $numPoints.change(function () {
+              numPoints = $(this).val();
+              draw();
+            });
+
+        });
+      </script>
+  </body>
+</html>
