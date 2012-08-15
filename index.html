@@ -13,6 +13,11 @@
         width:100%;
         height:400px;
       }
+
+      #outputTemplate {
+        margin-bottom:5px;
+        width:100%;
+      }
     </style>
   </head>
   <body>
@@ -47,6 +52,8 @@
 
       <canvas id="output" height="800px" width="800px">This tool only works in browsers supporting canvas, sorry</canvas>
 
+      <input type="text" name="outputTemplate" id="outputTemplate" />
+
       <textarea id="list"></textarea>
 
       <script type="text/javascript" src="jquery-1.8.0.min.js"></script>
@@ -63,7 +70,8 @@
                 $endAngleTxt = $('#endAngleTxt'),
                 $dir = $('#dir'),
                 $list = $('#list'),
-                $numPoints = $('#numPoints');
+                $numPoints = $('#numPoints'),
+                $outputTemplate = $('#outputTemplate');
 
             var cx = parseInt($canvas.width(), 10) / 2,
                 cy = parseInt($canvas.height(), 10) / 2,
@@ -76,7 +84,8 @@
                 numPoints = 53,
                 posX = cx,
                 posY = cy,
-                pointsArr = [];
+                pointsArr = [],
+                outputTemplate = '#panel3.frame_{i} h2 { left:{x}; top: {y}; }';
 
             $cx.val(cx);
             $cy.val(cy);
@@ -87,7 +96,8 @@
             $endAngle.val(endAngle);
             $endAngleTxt.val(endAngle);
             $dir.val(dir);
-            $numPoints.val(numPoints)
+            $numPoints.val(numPoints);
+            $outputTemplate.val(outputTemplate);
 
             var canvas = $canvas[0],
                 ctx = undefined;
@@ -137,9 +147,16 @@
                 ctx.stroke();
 
                 if (pointsArr.length > 0) {
-                  var str = '';
+                  var str = '',
+                      tmp = outputTemplate;
                   for (var i = 0; i < pointsArr.length; i++) {
-                    str += '#panel3.frame_' + parseInt(i + 1, 10) +' h2 { left:' + round(pointsArr[i].x, 2) + 'px; top: ' + round(pointsArr[i].y, 2) + 'px; }' + "\r\n";
+                    tmp = outputTemplate;
+                    tmp = tmp.replace('{i}', parseInt(i + 1, 10));
+                    tmp = tmp.replace('{x}', round(pointsArr[i].x, 2) + 'px');
+                    tmp = tmp.replace('{y}', round(pointsArr[i].y, 2) + 'px');
+                    str += tmp + "\r\n"
+
+                    // str += '#panel3.frame_' + parseInt(i + 1, 10) +' h2 { left:' + round(pointsArr[i].x, 2) + 'px; top: ' + round(pointsArr[i].y, 2) + 'px; }' + "\r\n";
                   }
 
                   $list.html(str);
@@ -203,6 +220,11 @@
 
             $numPoints.change(function () {
               numPoints = $(this).val();
+              draw();
+            });
+
+             $outputTemplate.change(function () {
+              outputTemplate = $(this).val();
               draw();
             });
 
